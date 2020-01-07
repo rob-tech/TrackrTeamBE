@@ -14,6 +14,18 @@ router.get('/category', async (req, res) => {
   })
 });
 
+router.get('/contract', async (req, res) => {
+
+  request('https://authenticjobs.com/api/?api_key=8d4a8b25dab4420c4cbc433f166552f7&method=aj.types.getlist&format=json', function (error, response, body) {
+    res.header('Access-Control-Allow-Origin', '*');
+
+    if (!error && response.statusCode == 200) {
+      var contractType = JSON.parse(body)
+      res.send(contractType);
+    }
+  })
+});
+
 
 
 module.exports = router;
