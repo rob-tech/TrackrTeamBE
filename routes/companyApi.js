@@ -27,5 +27,29 @@ router.get('/contract', async (req, res) => {
 });
 
 
+// router.get('/:location', async (req, res) => {
+//   var location = req.params.location
+//   request( "https://www.reed.co.uk/api/1.0/search?locationName=" + location , {headers: {Authorization: "Basic MDYwY2VjMjktMDgyYy00MDMzLTgyZjEtMjFjZTMyNmEzYzY0Og=="}}, function (error, response, body) {
+//     res.header('Access-Control-Allow-Origin', '*');
+    
+//     if (!error && response.statusCode == 200) {
+//       var location = JSON.parse(body)
+//       res.send(location);
+//     }
+//   }) 
+// });
+
+router.get('/:grade', async (req, res) => {
+  var grade = req.params.grade
+  request( "https://jobs.github.com/positions.json?description=" + grade, function (error, response, body) {
+    res.header('Access-Control-Allow-Origin', '*');
+    
+    if (!error && response.statusCode == 200) {
+      var positionGrade = JSON.parse(body)
+      res.send(positionGrade);
+    }
+  }) 
+});
+
 
 module.exports = router;
