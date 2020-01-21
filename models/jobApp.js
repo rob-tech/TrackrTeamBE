@@ -10,36 +10,30 @@ var JobApp = new mongoose.Schema({
     companyName: {
         type: String,
     },
-    website: {
+    roleTitle: {
         type: String,
     },
     location: {
         type: String,
-    },
-    roleTitle: {
-        type: String,
-    },
-    contractType: {
-        type: String,
-    },
+    }, 
     description: {
         type: String,
     },
     applyUrl: {
         type: String,
     },
-    deadline: {
+    expected: {
         type: Date,
     },
     applied: {
         type: Date
     },
-    interview1: {
+    interview: {
         type: Date
     },
-    interview2: {
-        type: Date
-    },
+    tasks: [{
+        type: String,
+    }],
     status: {
         type: String,
         enum: ["wishlist", "applied", "interview", "offer", "application withdrawn", "rejected"]
