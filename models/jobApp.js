@@ -40,9 +40,15 @@ var JobApp = new mongoose.Schema({
     interview2: {
         type: Date
     },
+    tasks:{
+        type:String
+    },
+    notes:{
+        type:String
+    },
     status: {
         type: String,
-        enum: ["wishlist", "applied", "interview", "offer", "application withdrawn", "rejected"]
+        enum: ["wishlist", "applied", "interview", "offer", "rejected"]
     },
 }, {
    
@@ -52,7 +58,4 @@ var JobApp = new mongoose.Schema({
 });
 
 
-
-
-
-module.exports = mongoose.model("JobApp", JobApp)
+module.exports = mongoose.model("jobapps", JobApp)

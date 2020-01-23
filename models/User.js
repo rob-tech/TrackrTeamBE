@@ -21,8 +21,9 @@ const UserSchema = new Schema({
     jobLocation: {
         type: String
     },
-    school:{
-        type:String
+    schoolId:{
+        type: Schema.Types.ObjectId,
+        required: true
     },
     image: {
         type: String,
@@ -38,6 +39,14 @@ const UserSchema = new Schema({
         type:String,
         required:true
     },
+    status:
+    {
+     type:String,
+     default:"Pending"
+    },
+    // jobApp: [{ 
+    //     type: Schema.Types.ObjectId, ref: 'JobApp'
+    //  }],
     role: {
         type: String,
         enum: ["Manager", "Student", "Admin", "Business"],
