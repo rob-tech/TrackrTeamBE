@@ -11,35 +11,28 @@ router.get('/', async (req, res) => {
     res.send(result);
 });
 
-router.get('/applied', async (req, res) => {
-    var newApp = (await jobApp.find({ status: { $in: 'applied' } }))
-    res.send(newApp);
-});
 
 router.get('/wishlist', async (req, res) => {
-    var wishlist = (await jobApp.find({ status: { $in: 'wishlist' } }))
+    let limit = req.query.limit || 50
+    delete limit
+    var wishlist = (await jobApp.find({ status: { $in: 'wishlist' } }).limit(parseInt(limit)))
     res.send(wishlist);
 });
 
-router.get('/interview', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'interview' } }))
-    res.send(interview);
+router.get('/active', async (req, res) => {
+    let limit = req.query.limit || 50
+    delete limit
+    var active = (await jobApp.find({ status: { $in: ['interview', 'offer', 'applied'] } }).limit(parseInt(limit)))
+    res.send(active);
 });
 
-router.get('/offer', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'offer' } }))
-    res.send(interview);
+router.get('/closed', async (req, res) => {
+    let limit = req.query.limit || 50
+    delete limit
+    var closed = (await jobApp.find({ status: { $in: ['application withdrawn', 'rejected'] } }).limit(parseInt(limit)))
+    res.send(closed);
 });
 
-router.get('/applicationWithdrawn', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'application withdrawn' } }))
-    res.send(interview);
-});
-
-router.get('/rejected', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'rejected' } }))
-    res.send(interview);
-});
 
 router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
@@ -88,7 +81,7 @@ router.put("/:appId",
         jobApp.findOneAndUpdate(
             { _id: req.params.appId },
             { $set: req.body },
-            {$push: {tasks: req.body}},
+            { $push: { tasks: req.body } },
             { new: true }
         )
             .then(
