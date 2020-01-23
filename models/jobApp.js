@@ -9,15 +9,21 @@ var JobApp = new mongoose.Schema({
     // },
     companyName: {
         type: String,
+        required: true,
+    },
+    companyLogo: {
+        type: String,
     },
     roleTitle: {
         type: String,
+        required: true,
     },
     location: {
         type: String,
     }, 
     description: {
         type: String,
+        required: true,
     },
     applyUrl: {
         type: String,
@@ -31,12 +37,13 @@ var JobApp = new mongoose.Schema({
     intDateTime: {
         type: Date
     },
-    task: [{
+    tasks: [{
         type: String,
     }],
     status: {
         type: String,
-        enum: ["wishlist", "applied", "interview", "offer", "application withdrawn", "rejected"]
+        enum: ["wishlist", "applied", "interview", "offer", "application withdrawn", "rejected"],
+        required: true,
     },
 }, {
    

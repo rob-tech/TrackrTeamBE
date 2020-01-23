@@ -11,7 +11,7 @@ router.get('/', async (req, res) => {
     res.send(result);
 });
 
-router.get('/newApp', async (req, res) => {
+router.get('/applied', async (req, res) => {
     var newApp = (await jobApp.find({ status: { $in: 'applied' } }))
     res.send(newApp);
 });
@@ -26,8 +26,24 @@ router.get('/interview', async (req, res) => {
     res.send(interview);
 });
 
+router.get('/offer', async (req, res) => {
+    var interview = (await jobApp.find({ status: { $in: 'offer' } }))
+    res.send(interview);
+});
+
+router.get('/applicationWithdrawn', async (req, res) => {
+    var interview = (await jobApp.find({ status: { $in: 'application withdrawn' } }))
+    res.send(interview);
+});
+
+router.get('/rejected', async (req, res) => {
+    var interview = (await jobApp.find({ status: { $in: 'rejected' } }))
+    res.send(interview);
+});
+
 router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
+
 })
 
 router.post("/", async (req, res, next) => {
@@ -72,6 +88,7 @@ router.put("/:appId",
         jobApp.findOneAndUpdate(
             { _id: req.params.appId },
             { $set: req.body },
+            {$push: {tasks: req.body}},
             { new: true }
         )
             .then(
