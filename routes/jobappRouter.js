@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
 });
 
 
+
 router.get('/wishlist', async (req, res) => {
     let limit = req.query.limit || 50
     delete limit
@@ -38,6 +39,16 @@ router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
 
 })
+
+router.get("/:id", async (req, res) => {
+    try {
+      var application = await jobApp.findById({ _id: req.params.id })
+      res.send(application)
+    }
+    catch (ex) {
+      res.send(ex)
+    }
+  })
 
 router.post("/", async (req, res, next) => {
     // req.body.userId = req.user._id
