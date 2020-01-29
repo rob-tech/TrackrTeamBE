@@ -37,6 +37,9 @@ var JobApp = new mongoose.Schema({
     intDateTime: {
         type: Date
     },
+    notes: {
+        type: String,
+    },
     tasks: [{
         type: String,
     }],
