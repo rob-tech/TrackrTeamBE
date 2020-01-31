@@ -20,6 +20,11 @@ router.get('/wishlist', async (req, res) => {
     res.send(wishlist);
 });
 
+router.get('/wishlistCount', async (req, res) => {
+    var totWish = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+    res.send({ totWish: totWish })
+});
+
 router.get('/active', async (req, res) => {
     let limit = req.query.limit || 50
     delete limit
