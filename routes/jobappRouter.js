@@ -21,8 +21,10 @@ router.get('/wishlist', async (req, res) => {
 });
 
 router.get('/wishlistCount', async (req, res) => {
-    var totWish = (await jobApp.find({ status: { $in: 'wishlist' } })).length
-    res.send({ totWish: totWish })
+    var wishlistCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+    var deduct = 5
+    wishlistCount = wishlistCount - deduct
+    res.send({ wishlistCount: wishlistCount })
 });
 
 router.get('/active', async (req, res) => {
@@ -32,6 +34,16 @@ router.get('/active', async (req, res) => {
     res.send(active);
 });
 
+router.get('/activeCount', async (req, res) => {
+    var int = (await jobApp.find({ status: { $in: 'interview' } })).length
+    var off = (await jobApp.find({ status: { $in: 'offer' } })).length
+    var app = (await jobApp.find({ status: { $in: 'applied' } })).length
+    var activeCount = []
+    var deduct = 5
+    activeCount.push(int + off + app - deduct)
+    res.send({ activeCount: activeCount })
+});
+
 router.get('/closed', async (req, res) => {
     let limit = req.query.limit || 50
     delete limit
@@ -39,6 +51,12 @@ router.get('/closed', async (req, res) => {
     res.send(closed);
 });
 
+router.get('/closedCount', async (req, res) => {
+    var closedCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+    var deduct = 5
+    closedCount = closedCount - deduct
+    res.send({ closedCount: closedCount })
+});
 
 router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
