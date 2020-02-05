@@ -17,7 +17,7 @@ router.get("/app", async (req, res) => {
 
 })
 
-router.get("/:applicationStatus", async (req, res)=> {
+router.get("/search/:applicationStatus", async (req, res)=> {
     let limit = req.query.limit || 50
     delete limit
     let deduct = 5
@@ -50,7 +50,7 @@ router.get("/:applicationStatus", async (req, res)=> {
 
 router.get("/:id", async (req, res) => {
     try {
-      var application = await jobApp.findById({ _id: req.params.id })
+      var application = await jobApp.findById(req.params.id)
       res.send(application)
     }
     catch (ex) {
