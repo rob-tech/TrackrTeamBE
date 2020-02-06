@@ -95,25 +95,18 @@ router.delete("/:appId", async (req, res, next) => {
     // }
 })
 
-router.put("/:appId",
-    (req, res, next) => {
-        jobApp.findOneAndUpdate(
-            { _id: req.params.appId },
-            { $set: req.body },
-            { $push: { tasks: req.body } },
-            { new: true }
-        )
-            .then(
-                app => {
-                    res.statusCode = 200;
-                    res.setHeader("Content-Type", "application/json");
-                    res.json(app);
-                },
-                error => next(error),
-            )
-            .catch(error => next(error));
+router.put("/:appId", async (req, res, next) => {
+    try {
+        await jobApp.findByIdAndUpdate({ _id: req.params.appId }, { $set: req.body },{ $push: { tasks: req.body } })
+        res.send("updated")
+    }
+    catch (ex) {
+        res.send(ex)
+      }
     }
 )
+
+
 ///////Statistics & PDF
 router.get("/totApp", async (req, res) => {
     var totNewApp = (await jobApp.find({ status: { $in: 'applied' } })).length
