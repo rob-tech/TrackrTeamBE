@@ -11,40 +11,52 @@ router.get('/', async (req, res) => {
     res.send(result);
 });
 
-router.get('/applied', async (req, res) => {
-    var newApp = (await jobApp.find({ status: { $in: 'applied' } }))
-    res.send(newApp);
-});
-
-router.get('/wishlist', async (req, res) => {
-    var wishlist = (await jobApp.find({ status: { $in: 'wishlist' } }))
-    res.send(wishlist);
-});
-
-router.get('/interview', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'interview' } }))
-    res.send(interview);
-});
-
-router.get('/offer', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'offer' } }))
-    res.send(interview);
-});
-
-router.get('/applicationWithdrawn', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'application withdrawn' } }))
-    res.send(interview);
-});
-
-router.get('/rejected', async (req, res) => {
-    var interview = (await jobApp.find({ status: { $in: 'rejected' } }))
-    res.send(interview);
-});
 
 router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
 
 })
+
+router.get("/search/:applicationStatus", async (req, res)=> {
+    let limit = req.query.limit || 50
+    delete limit
+    let deduct = 5
+    switch (req.params.applicationStatus){
+    case "closed":
+        const closed = (await jobApp.find({ status: { $in: ['application withdrawn', 'rejected'] } }).limit(parseInt(limit)))
+        const closedCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+        closedCount = closedCount - deduct
+        res.send({ result: closed, total: closedCount});
+        break;
+        case "active":
+            const active = (await jobApp.find({ status: { $in: ['interview', 'offer', 'applied'] } }).limit(parseInt(limit)))
+            let int = (await jobApp.find({ status: { $in: 'interview' } })).length
+            let off = (await jobApp.find({ status: { $in: 'offer' } })).length
+            let app = (await jobApp.find({ status: { $in: 'applied' } })).length
+            const activeCount = []
+            activeCount.push(int + off + app - deduct)
+            res.send({ result: active, total: activeCount});
+            break;
+            case "wishlist":
+                const wishlist = (await jobApp.find({ status: { $in: 'wishlist' } }).limit(parseInt(limit)))
+                let wishlistCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+                wishlistCount = wishlistCount - deduct
+                res.send({ result: wishlist, total: wishlistCount});
+                break;
+    }
+ 
+})
+
+
+router.get("/:id", async (req, res) => {
+    try {
+      var application = await jobApp.findById(req.params.id)
+      res.send(application)
+    }
+    catch (ex) {
+      res.send(ex)
+    }
+  })
 
 router.post("/", async (req, res, next) => {
     // req.body.userId = req.user._id
@@ -83,25 +95,18 @@ router.delete("/:appId", async (req, res, next) => {
     // }
 })
 
-router.put("/:appId",
-    (req, res, next) => {
-        jobApp.findOneAndUpdate(
-            { _id: req.params.appId },
-            { $set: req.body },
-            {$push: {tasks: req.body}},
-            { new: true }
-        )
-            .then(
-                app => {
-                    res.statusCode = 200;
-                    res.setHeader("Content-Type", "application/json");
-                    res.json(app);
-                },
-                error => next(error),
-            )
-            .catch(error => next(error));
+router.put("/:appId", async (req, res, next) => {
+    try {
+        await jobApp.findByIdAndUpdate({ _id: req.params.appId }, { $set: req.body },{ $push: { tasks: req.body } })
+        res.send("updated")
+    }
+    catch (ex) {
+        res.send(ex)
+      }
     }
 )
+
+
 ///////Statistics & PDF
 router.get("/totApp", async (req, res) => {
     var totNewApp = (await jobApp.find({ status: { $in: 'applied' } })).length
