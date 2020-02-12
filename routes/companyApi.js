@@ -39,14 +39,14 @@ router.get('/contract', async (req, res) => {
 //   }) 
 // });
 
-router.get('/:grade', async (req, res) => {
-  var grade = req.params.grade
-  request( "https://jobs.github.com/positions.json?description=" + grade, function (error, response, body) {
+router.get('/:url', async (req, res) => {
+  var url = req.params.url
+  request( "https://jobs.github.com/positions.json?" + url, function (error, response, body) {
     res.header('Access-Control-Allow-Origin', '*');
     
     if (!error && response.statusCode == 200) {
-      var positionGrade = JSON.parse(body)
-      res.send(positionGrade);
+      var filteredSearch = JSON.parse(body)
+      res.send(filteredSearch);
     }
   }) 
 });

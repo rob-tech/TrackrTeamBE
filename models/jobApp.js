@@ -3,52 +3,50 @@ const passportLocalMongoose = require("passport-local-mongoose")
 const { Schema } = require("mongoose")
 
 var JobApp = new mongoose.Schema({
-    studentId: {
-        type: Schema.Types.ObjectId,
-        required: true,
-    },
+    // studentId: {
+    //     type: Schema.Types.ObjectId,
+    //     required: true,
+    // },
     companyName: {
         type: String,
+        required: true,
     },
-    website: {
-        type: String,
-    },
-    location: {
+    companyLogo: {
         type: String,
     },
     roleTitle: {
         type: String,
+        required: true,
     },
-    contractType: {
+    location: {
         type: String,
-    },
+    }, 
     description: {
         type: String,
+        required: true,
     },
     applyUrl: {
         type: String,
     },
-    deadline: {
+    replyDateTime: {
         type: Date,
     },
-    applied: {
+    statusDateTime: {
         type: Date
     },
-    interview1: {
+    intDateTime: {
         type: Date
     },
-    interview2: {
-        type: Date
-    },
-    tasks:{
-        type:String
-    },
-    notes:{
-        type:String
-    },
+    notes: [{
+        type: String,
+    }],
+    tasks: [{
+        type: String,
+    }],
     status: {
         type: String,
-        enum: ["wishlist", "applied", "interview", "offer", "rejected"]
+        enum: ["wishlist", "applied", "interview", "offer", "application withdrawn", "rejected"],
+        required: true,
     },
 }, {
    
