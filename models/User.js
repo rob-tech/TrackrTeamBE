@@ -50,7 +50,11 @@ const UserSchema = new Schema({
     role: {
         type: String,
         enum: ["Manager", "Student", "Admin", "Business"],
-    }
+    },
+    userStatus:{
+        type:String,
+        enum:["Pending","Accept","Reject"],
+    },
 }, {
         timestamps: true
     });   

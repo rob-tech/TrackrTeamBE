@@ -33,6 +33,7 @@ res.send("send")
 
 userRouter.post("/register", async (req, res) => {
   try {
+    req.body.username = req.body.email
     var user = await UserSchema.register(req.body, req.body.password);
     res.send(user);
   } catch (err) {
@@ -78,6 +79,7 @@ userRouter.post("/login", passport.authenticate("local"), (req, res) => {
       success: true,
       email: req.user.email,
       token: token,
+      role:req.user.role,
       user: req.user,
     });
 
