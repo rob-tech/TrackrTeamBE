@@ -31,6 +31,7 @@ userRouter.post("/", (req, res) => {
 
 userRouter.post("/register", async (req, res) => {
   try {
+    req.body.username = req.body.email
     var user = await UserSchema.register(req.body, req.body.password);
     res.send(user);
   } catch (err) {
@@ -72,6 +73,7 @@ userRouter.post("/login", passport.authenticate("local"), (req, res) => {
       success: true,
       email: req.user.email,
       token: token,
+      role:req.user.role,
       user: req.user,
     });
   }
@@ -142,8 +144,8 @@ userRouter.delete("/:id", async (req, res) => {
 userRouter.put("/:id", async (req, res) => {
   try {
     console.log(req.body)
-    var users = await UserSchema.findByIdAndUpdate({ _id: req.params.id }, req.body)
-    res.send("user updated successfully.")
+    var users = await UserSchema.findByIdAndUpdate({ _id: req.params.id },  { $set: req.body },  { useUnifiedTopology: true })
+    res.send(users)
   }
   catch (ex) {
     res.send(ex)
