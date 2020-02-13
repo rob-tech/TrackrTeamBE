@@ -17,6 +17,36 @@ router.get("/app", async (req, res) => {
 
 })
 
+router.get("/totApp", async (req, res) => {
+    //var totApp = (await jobApp.find({ status: { $in: ['interview', 'offer', 'applied'] } }).length)
+    var totNewApp = (await  jobApp.find({ status: { $in: 'applied' } })).length
+    var totInt = (await jobApp.find({ status: { $in: 'interview' } })).length
+    var totApp = []
+    totApp.push(totNewApp + totInt )
+    res.send(totApp)
+})
+
+router.get("/AppsWeek", async (req, res) => {
+    var curr = new Date()
+    var week = []
+
+    for (let i = 1; i <= 7; i++) {
+        let first = curr.getDate() - curr.getDay() + i
+        let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
+        week.push(day)
+    }
+    var finalArr = []
+    var newApplications = await jobApp.find({ status: { $in: 'applied' } })
+    newApplications.forEach((e1) => week.forEach((e2) => {
+        var createdDate = e1.createdAt.toISOString().substr(0, 10)
+        if (createdDate == e2) {
+            finalArr.push(e1)
+        }
+    }))
+    var lastWeek = finalArr.length
+    res.send({ lastWeek: lastWeek })
+})
+
 router.get("/search/:applicationStatus", async (req, res)=> {
     let limit = req.query.limit || 50
     delete limit
@@ -107,16 +137,9 @@ router.put("/:appId", async (req, res, next) => {
 )
 
 
-///////Statistics & PDF
-router.get("/totApp", async (req, res) => {
-    var totNewApp = (await jobApp.find({ status: { $in: 'applied' } })).length
-    var totInt = (await jobApp.find({ status: { $in: 'interview' } })).length
-    var totOff = (await jobApp.find({ status: { $in: 'offer' } })).length
-    var totApp = []
-    totApp.push(totNewApp + totInt + totOff)
-    res.send({ totApp: totApp })
-})
 
+
+///////Statistics & PDF
 router.get("/downloadPdf", async (req, res) => {
     //get students 
     var users = await UserSchema.find({ role: { $in: 'Student' } })
@@ -189,26 +212,7 @@ router.get("/downloadPdf", async (req, res) => {
     })
     doc.end();
 })
-router.get("/AppsWeek", async (req, res) => {
-    var curr = new Date()
-    var week = []
 
-    for (let i = 1; i <= 7; i++) {
-        let first = curr.getDate() - curr.getDay() + i
-        let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
-        week.push(day)
-    }
-    var finalArr = []
-    var newApplications = await jobApp.find({ status: { $in: 'applied' } })
-    newApplications.forEach((e1) => week.forEach((e2) => {
-        var createdDate = e1.createdAt.toISOString().substr(0, 10)
-        if (createdDate == e2) {
-            finalArr.push(e1)
-        }
-    }))
-    var lastWeek = finalArr.length
-    res.send({ lastWeek: lastWeek })
-})
 router.get("/:id", async (req, res) => {
     try {
         var apps = await jobApp.findById({ _id: req.params.id })

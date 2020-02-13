@@ -7,7 +7,6 @@ const UserSchema = require("../models/User");
 const { createToken, getToken, token } = require("../authenticate")
 const sgMail = require('@sendgrid/mail');
 
-
 sgMail.setApiKey(process.env.SENDGRID_KEY);
 
 userRouter.post("/", (req, res) => {
@@ -63,6 +62,8 @@ userRouter.post("/refresh", token, (req, res) => {
 })
 
 userRouter.get("/me", passport.authenticate("jwt", { session: false }), async (req, res) => {
+  console.log(req.user._id)
+  console.log(req)
   res.send(req.user)
 })
 
