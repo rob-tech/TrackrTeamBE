@@ -13,10 +13,8 @@ router.get('/', async (req, res) => {
     res.send(result);
 });
 
-
 router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
-
 })
 
 router.get("/totApp", async (req, res) => {
@@ -74,7 +72,6 @@ router.post("/", async (req, res, next) => {
     try {
         const newJobApp = { ...req.body }
         // newJobApp.userId = req.user._id
-
         await jobApp.create(newJobApp)
         res.send(newJobApp)
     }
@@ -85,13 +82,11 @@ router.post("/", async (req, res, next) => {
             error: err
         });
     }
-
 })
 
 router.delete("/:appId", async (req, res, next) => {
     var application = await jobApp.findById(req.params.appId);
     // if (application.userId == req.user._id) {
-
     jobApp.findByIdAndRemove(
         req.params.appId
     )
@@ -107,7 +102,6 @@ router.delete("/:appId", async (req, res, next) => {
     // res.status(401)
     // res.send("Unauthorized")
     // }
-
 })
 
 router.put("/:appId", async (req, res, next) => {
@@ -121,14 +115,11 @@ router.put("/:appId", async (req, res, next) => {
     }
 )
 
-
 ///////Statistics & PDF
-
 router.get("/downloadPdf", async (req, res) => {
 //get students 
 var users = await UserSchema.find({ role: { $in: 'Student' } })
 var studentUsers = users.length
-
 //get last week apps
     var curr = new Date() 
     var week = []
@@ -139,7 +130,6 @@ var studentUsers = users.length
        week.push(day)        
      }
      var finalArr=[]
-
      var newApplications = await jobApp.find({ status: { $in: 'applied'} })  
      newApplications.forEach((e1)=>week.forEach((e2)=>{
 
@@ -158,10 +148,8 @@ var studentUsers = users.length
      var totApp = []
      totApp.push(totNewApp + totInt + totOff )
 
-
         // Create a document
         const doc = new PDFDocument;
-
         doc.pipe(fs.createWriteStream('output.pdf'));
       
         doc.fontSize(30)
@@ -213,14 +201,12 @@ var studentUsers = users.length
 router.get("/AppsWeek",  async (req, res) => {
      var curr = new Date() 
      var week = []
-      
       for (let i = 1; i <= 7; i++) {
         let first = curr.getDate() - curr.getDay() + i 
         let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
         week.push(day)        
       }
       var finalArr=[]
-
       var newApplications = await jobApp.find({ status: { $in: 'applied'} })  
       newApplications.forEach((e1)=>week.forEach((e2)=>{
 

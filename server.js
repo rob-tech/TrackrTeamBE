@@ -11,8 +11,6 @@ const auth = require("./authenticate");
 const { studentOnly, managerOnly, token } = require("./authenticate");
 
 require("dotenv").config();
-
-
 const server = express();
 
 server.set("port", process.env.PORT || 4000);
@@ -25,7 +23,6 @@ server.use("/application", jobappRouter);
 server.use("/companyApi", companyApiRouter);
 server.use("/user", userRouter);
 server.use("/school", schoolRouter);
-console.log(process.env.MONGOCONNECT);
 
 mongoose
   .connect(process.env.MONGOCONNECT, {
