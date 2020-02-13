@@ -1,5 +1,5 @@
 const express = require("express");
-const request = require('request');
+const request = require("request");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
@@ -15,7 +15,6 @@ require("dotenv").config();
 
 const server = express();
 
-
 server.set("port", process.env.PORT || 4000);
 
 server.use(cors());
@@ -25,10 +24,8 @@ server.use(bodyParser.json());
 
 server.use("/application", jobappRouter);
 server.use("/user", userRouter);
-server.use("/school",  schoolRouter);
-server.use("/companyApi",  companyApiRouter);
-
-console.log(process.env.MONGOCONNECT);
+server.use("/school", schoolRouter);
+server.use("/companyApi", companyApiRouter);
 
 mongoose
   .connect(process.env.MONGOCONNECT, {
@@ -43,3 +40,6 @@ mongoose
   //   console.log("server is running on port 3000")
   .catch(err => console.log(err));
 
+server.get("/", (req, res) => {
+  res.send("Hello");
+});
