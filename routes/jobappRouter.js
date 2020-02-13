@@ -23,7 +23,7 @@ router.get("/totApp", async (req, res) => {
     var totOff = (await jobApp.find({status: { $in: 'offer'}  })).length
     var totApp = []
     totApp.push(totNewApp + totInt + totOff )
-    res.send({ totApp: totApp})
+    res.send(totApp)
 })
 
 router.get("/search/:applicationStatus", async (req, res)=> {
