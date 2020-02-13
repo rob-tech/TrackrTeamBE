@@ -217,7 +217,7 @@ router.get("/AppsWeek",  async (req, res) => {
         }
       }))
       var lastWeek = finalArr.length
-      res.send({ lastWeek: lastWeek})
+      res.send(lastWeek)
 })
 
 router.get("/:id", async (req, res) => {
