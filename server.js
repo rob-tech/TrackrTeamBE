@@ -6,6 +6,7 @@ const passport = require("passport");
 const jobappRouter = require("./routes/jobappRouter");
 const userRouter = require("./routes/userRouter");
 const schoolRouter = require("./routes/schoolRouter");
+const companyApiRouter = require("./routes/companyApi");
 const auth = require("./authenticate");
 const { studentOnly, managerOnly, token } = require("./authenticate");
 
@@ -20,7 +21,8 @@ server.use(express.json());
 server.use(passport.initialize());
 server.use(bodyParser.json());
 
-server.use("/application",  jobappRouter);
+server.use("/application", jobappRouter);
+server.use("/companyApi", companyApiRouter);
 server.use("/user", userRouter);
 server.use("/school", schoolRouter);
 console.log(process.env.MONGOCONNECT);

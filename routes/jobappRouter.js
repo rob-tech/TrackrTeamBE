@@ -4,6 +4,7 @@ const UserSchema = require("../models/User")
 const fs = require("fs-extra")
 const PDFDocument = require('pdfkit');
 const mongoose = require('mongoose')
+const { adminOnly, managerOnly, studentOnly, token } = require("../authenticate")
 
 const router = express.Router();
 
@@ -16,6 +17,15 @@ router.get('/', async (req, res) => {
 router.get("/app", async (req, res) => {
     res.send(await jobApp.find({}))
 
+})
+
+router.get("/totApp", async (req, res) => {
+    var totNewApp = (await jobApp.find({status: { $in: 'applied'}  })).length
+    var totInt = (await jobApp.find({status: { $in: 'interview'}  })).length
+    var totOff = (await jobApp.find({status: { $in: 'offer'}  })).length
+    var totApp = []
+    totApp.push(totNewApp + totInt + totOff )
+    res.send({ totApp: totApp})
 })
 
 router.get("/search/:applicationStatus", async (req, res)=> {
@@ -114,15 +124,6 @@ router.put("/:appId", async (req, res, next) => {
 
 ///////Statistics & PDF
 
-router.get("/totApp", async (req, res) => {
-    var totNewApp = (await jobApp.find({status: { $in: 'applied'}  })).length
-    var totInt = (await jobApp.find({status: { $in: 'interview'}  })).length
-    var totOff = (await jobApp.find({status: { $in: 'offer'}  })).length
-    var totApp = []
-    totApp.push(totNewApp + totInt + totOff )
-    res.send({ totApp: totApp})
-})
-
 router.get("/downloadPdf", async (req, res) => {
 //get students 
 var users = await UserSchema.find({ role: { $in: 'Student' } })
@@ -209,7 +210,7 @@ var studentUsers = users.length
         doc.end();
 })
 
-router.get("/AppsWeek", async (req, res) => {
+router.get("/AppsWeek",  async (req, res) => {
      var curr = new Date() 
      var week = []
       
