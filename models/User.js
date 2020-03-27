@@ -23,7 +23,7 @@ const UserSchema = new Schema({
     },
     schoolId:{
         type: Schema.Types.ObjectId,
-        required: true
+        // required: true
     },
     image: {
         type: String,

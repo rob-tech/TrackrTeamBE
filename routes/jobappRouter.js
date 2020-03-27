@@ -201,21 +201,25 @@ var studentUsers = users.length
 router.get("/AppsWeek",  async (req, res) => {
      var curr = new Date() 
      var week = []
+     console.log("hi")
       for (let i = 1; i <= 7; i++) {
         let first = curr.getDate() - curr.getDay() + i 
+        console.log(first,"fir")
         let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
         week.push(day)        
       }
       var finalArr=[]
-      var newApplications = await jobApp.find({ status: { $in: 'applied'} })  
+      console.log(week,"wee")
+      var newApplications = await jobApp.find({ status: { $in: 'applied'}})  
+      console.log(newApplications,"new")
       newApplications.forEach((e1)=>week.forEach((e2)=>{
-
-    var createdDate = e1.createdAt.toISOString().substr(0, 10)
+       var createdDate = e1.createdAt.toISOString().substr(0, 10)
         if(createdDate == e2)
         {
             finalArr.push(e1)
         }
       }))
+      console.log(finalArr,"final")
       var lastWeek = finalArr.length
       res.send(lastWeek)
 })

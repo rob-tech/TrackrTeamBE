@@ -3,10 +3,10 @@ const passportLocalMongoose = require("passport-local-mongoose")
 const { Schema } = require("mongoose")
 
 var JobApp = new mongoose.Schema({
-    // studentId: {
-    //     type: Schema.Types.ObjectId,
-    //     required: true,
-    // },
+    studentId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+    },
     companyName: {
         type: String,
         required: true,
