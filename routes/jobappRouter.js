@@ -97,11 +97,6 @@ router.delete("/:appId", async (req, res, next) => {
             err => next(err)
         )
         .catch(err => next(err));
-    // }
-    // else {
-    // res.status(401)
-    // res.send("Unauthorized")
-    // }
 })
 
 router.put("/:appId", async (req, res, next) => {
