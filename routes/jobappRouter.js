@@ -4,7 +4,8 @@ const UserSchema = require("../models/User")
 const fs = require("fs-extra")
 const PDFDocument = require('pdfkit');
 const mongoose = require('mongoose')
-const { adminOnly, managerOnly, studentOnly, token } = require("../authenticate")
+const User = require("../models/User");
+const {studentOnly, token } = require("../authenticate")
 
 const router = express.Router();
 
@@ -67,11 +68,11 @@ router.get("/:id", async (req, res) => {
     }
   })
 
-router.post("/", async (req, res, next) => {
-    // req.body.userId = req.user._id
+router.post("/", token, studentOnly, async (req, res, next) => {
+    var user = await User.findById({_id:req.body.studentId})
+    if(user != null){
     try {
         const newJobApp = { ...req.body }
-        // newJobApp.userId = req.user._id
         await jobApp.create(newJobApp)
         res.send(newJobApp)
     }
@@ -82,6 +83,7 @@ router.post("/", async (req, res, next) => {
             error: err
         });
     }
+}
 })
 
 router.delete("/:appId", async (req, res, next) => {
@@ -196,15 +198,12 @@ var studentUsers = users.length
 router.get("/AppsWeek",  async (req, res) => {
      var curr = new Date() 
      var week = []
-     console.log("hi")
       for (let i = 1; i <= 7; i++) {
         let first = curr.getDate() - curr.getDay() + i 
-        console.log(first,"fir")
         let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
         week.push(day)        
       }
       var finalArr=[]
-      console.log(week,"wee")
       var newApplications = await jobApp.find({ status: { $in: 'applied'}})  
       console.log(newApplications,"new")
       newApplications.forEach((e1)=>week.forEach((e2)=>{

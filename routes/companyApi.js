@@ -1,55 +1,70 @@
 const express = require("express");
 const request = require('request');
+const redis = require("redis");
+const fetch = require('node-fetch');
 const router = express.Router();
 
-router.get('/category', async (req, res) => {
-
-  request('https://authenticjobs.com/api/?api_key=8d4a8b25dab4420c4cbc433f166552f7&method=aj.categories.getlist&format=json', function (error, response, body) {
-    res.header('Access-Control-Allow-Origin', '*');
-
-    if (!error && response.statusCode == 200) {
-      var jobCategory = JSON.parse(body)
-      res.send(jobCategory);
-    }
-  })
-});
-
-router.get('/contract', async (req, res) => {
-
-  request('https://authenticjobs.com/api/?api_key=8d4a8b25dab4420c4cbc433f166552f7&method=aj.types.getlist&format=json', function (error, response, body) {
-    res.header('Access-Control-Allow-Origin', '*');
-
-    if (!error && response.statusCode == 200) {
-      var contractType = JSON.parse(body)
-      res.send(contractType);
-    }
-  })
-});
+const REDIS_PORT = process.env.PORT || 6379;
+const client = redis.createClient(REDIS_PORT)
 
 
-// router.get('/:location', async (req, res) => {
-//   var location = req.params.location
-//   request( "https://www.reed.co.uk/api/1.0/search?locationName=" + location , {headers: {Authorization: "Basic MDYwY2VjMjktMDgyYy00MDMzLTgyZjEtMjFjZTMyNmEzYzY0Og=="}}, function (error, response, body) {
+// router.get('/:url', async (req, res) => {
+//   var url = req.params.url
+//   request("https://jobs.github.com/positions.json?" + url, function (error, response, body) {
 //     res.header('Access-Control-Allow-Origin', '*');
-    
 //     if (!error && response.statusCode == 200) {
-//       var location = JSON.parse(body)
-//       res.send(location);
+//       let filteredSearch = JSON.parse(body)
+//       // getCachedData(filteredSearch)
+//       res.send(filteredSearch);
+//       client.setex(url, 10, JSON.stringify(filteredSearch))
 //     }
-//   }) 
+//   })
 // });
 
-router.get('/:url', async (req, res) => {
-  var url = req.params.url
-  request( "https://jobs.github.com/positions.json?" + url, function (error, response, body) {
-    res.header('Access-Control-Allow-Origin', '*');
-    
-    if (!error && response.statusCode == 200) {
-      var filteredSearch = JSON.parse(body)
-      res.send(filteredSearch);
+
+async function getData(req, res, next) {
+  try {
+    console.log('Fetching Data...');
+    const { url } = req.params;
+
+    const response = await fetch(`https://jobs.github.com/positions.json?${url}`, {
+      headers: { 'Access-Control-Allow-Origin': "*" }
+    })
+    const data = await response.json()
+
+    client.setex(url, 1440, JSON.stringify(data))
+    res.send(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500);
+  }
+}
+
+function cache(req, res, next) {
+  const { url } = req.params;
+
+  client.get(url, (err, data) => {
+    if (err) throw err;
+
+    if (data !== null) {
+      res.send(data);
+      // getKeys()
+    } else {
+      next();
     }
-  }) 
-});
+  });
+}
+
+// function getKeys(req, res, next) {
+// client.keys('*', function (err, keys) {
+//   if (err) return console.log(err);
+//   if(keys){
+//       console.log(keys)
+//   }
+// });
+// }
+
+router.get('/:url', cache, getData);
 
 
 module.exports = router;

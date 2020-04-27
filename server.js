@@ -10,6 +10,7 @@ const companyApiRouter = require("./routes/companyApi");
 const auth = require("./authenticate");
 const { studentOnly, managerOnly, token } = require("./authenticate");
 
+
 require("dotenv").config();
 const server = express();
 
