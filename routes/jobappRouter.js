@@ -5,7 +5,7 @@ const fs = require("fs-extra")
 const PDFDocument = require('pdfkit');
 const mongoose = require('mongoose')
 const User = require("../models/User");
-const {studentOnly, token } = require("../authenticate")
+const { studentOnly, token, managerOnly } = require("../authenticate")
 
 const router = express.Router();
 
@@ -14,30 +14,30 @@ router.get('/', async (req, res) => {
     res.send(result);
 });
 
-router.get("/app", async (req, res) => {
-    res.send(await jobApp.find({}))
+router.get("/app", token, studentOnly, async (req, res) => {
+    res.send(await jobApp.find({ studentId: req.user._id }))
 })
 
 router.get("/totApp", async (req, res) => {
-    var totNewApp = (await jobApp.find({status: { $in: 'applied'}  })).length
-    var totInt = (await jobApp.find({status: { $in: 'interview'}  })).length
-    var totOff = (await jobApp.find({status: { $in: 'offer'}  })).length
+    var totNewApp = (await jobApp.find({ status: { $in: 'applied' } })).length
+    var totInt = (await jobApp.find({ status: { $in: 'interview' } })).length
+    var totOff = (await jobApp.find({ status: { $in: 'offer' } })).length
     var totApp = []
-    totApp.push(totNewApp + totInt + totOff )
+    totApp.push(totNewApp + totInt + totOff)
     res.send(totApp)
 })
 
-router.get("/search/:applicationStatus", async (req, res)=> {
+router.get("/search/:applicationStatus", async (req, res) => {
     let limit = req.query.limit || 50
     delete limit
     let deduct = 5
-    switch (req.params.applicationStatus){
-    case "closed":
-        const closed = (await jobApp.find({ status: { $in: ['application withdrawn', 'rejected'] } }).limit(parseInt(limit)))
-        const closedCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
-        closedCount = closedCount - deduct
-        res.send({ result: closed, total: closedCount});
-        break;
+    switch (req.params.applicationStatus) {
+        case "closed":
+            const closed = (await jobApp.find({ status: { $in: ['application withdrawn', 'rejected'] } }).limit(parseInt(limit)))
+            const closedCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+            closedCount = closedCount - deduct
+            res.send({ result: closed, total: closedCount });
+            break;
         case "active":
             const active = (await jobApp.find({ status: { $in: ['interview', 'offer', 'applied'] } }).limit(parseInt(limit)))
             let int = (await jobApp.find({ status: { $in: 'interview' } })).length
@@ -45,34 +45,33 @@ router.get("/search/:applicationStatus", async (req, res)=> {
             let app = (await jobApp.find({ status: { $in: 'applied' } })).length
             const activeCount = []
             activeCount.push(int + off + app - deduct)
-            res.send({ result: active, total: activeCount});
+            res.send({ result: active, total: activeCount });
             break;
-            case "wishlist":
-                const wishlist = (await jobApp.find({ status: { $in: 'wishlist' } }).limit(parseInt(limit)))
-                let wishlistCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
-                wishlistCount = wishlistCount - deduct
-                res.send({ result: wishlist, total: wishlistCount});
-                break;
+        case "wishlist":
+            const wishlist = (await jobApp.find({ status: { $in: 'wishlist' } }).limit(parseInt(limit)))
+            let wishlistCount = (await jobApp.find({ status: { $in: 'wishlist' } })).length
+            wishlistCount = wishlistCount - deduct
+            res.send({ result: wishlist, total: wishlistCount });
+            break;
     }
- 
+
 })
 
 
 router.get("/:id", async (req, res) => {
     try {
-      var application = await jobApp.findById(req.params.id)
-      res.send(application)
+        var application = await jobApp.findById(req.params.id)
+        res.send(application)
     }
     catch (ex) {
-      res.send(ex)
+        res.send(ex)
     }
-  })
+})
 
 router.post("/", token, studentOnly, async (req, res, next) => {
-    var user = await User.findById({_id:req.body.studentId})
-    if(user != null){
     try {
         const newJobApp = { ...req.body }
+        newJobApp.studentId = req.user.id
         await jobApp.create(newJobApp)
         res.send(newJobApp)
     }
@@ -83,7 +82,6 @@ router.post("/", token, studentOnly, async (req, res, next) => {
             error: err
         });
     }
-}
 })
 
 router.delete("/:appId", async (req, res, next) => {
@@ -101,121 +99,133 @@ router.delete("/:appId", async (req, res, next) => {
         .catch(err => next(err));
 })
 
-router.put("/:appId", async (req, res, next) => {
-    try {
-        await jobApp.findByIdAndUpdate({ _id: req.params.appId }, { $set: req.body },{ $push: { tasks: req.body } })
-        res.send("updated")
+router.put("/:appId", token, studentOnly, async (req, res, next) => {
+    let app = await jobApp.findById(req.params.appId)
+    if (app.studentId.toString() === req.user.id) {
+        try {
+            // delete req.body.studentId
+            var updated = await jobApp.updateOne({ _id: req.params.appId }, { $set: req.body }, { $push: { tasks: req.body, notes: req.body } })
+            res.send(updated)
+
+        }
+        catch (err) {
+            res.status(err.status || 500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
     }
-    catch (ex) {
-        res.send(ex)
-      }
+    else {
+        res.status(401).send()
     }
+    // if(user != null){
+}
+    // }
 )
 
 ///////Statistics & PDF
 router.get("/downloadPdf", async (req, res) => {
-//get students 
-var users = await UserSchema.find({ role: { $in: 'Student' } })
-var studentUsers = users.length
-//get last week apps
-    var curr = new Date() 
+    //get students 
+    var users = await UserSchema.find({ role: { $in: 'Student' } })
+    var studentUsers = users.length
+    //get last week apps
+    var curr = new Date()
     var week = []
-     
-     for (let i = 1; i <= 7; i++) {
-       let first = curr.getDate() - curr.getDay() + i 
-       let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
-       week.push(day)        
-     }
-     var finalArr=[]
-     var newApplications = await jobApp.find({ status: { $in: 'applied'} })  
-     newApplications.forEach((e1)=>week.forEach((e2)=>{
 
-     var createdDate = e1.createdAt.toISOString().substr(0, 10)
-                if(createdDate == e2)
-                {
-                    finalArr.push(e1)
-                }
-     }))
-     var lastWeek = finalArr.length
+    for (let i = 1; i <= 7; i++) {
+        let first = curr.getDate() - curr.getDay() + i
+        let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
+        week.push(day)
+    }
+    var finalArr = []
+    var newApplications = await jobApp.find({ status: { $in: 'applied' } })
+    newApplications.forEach((e1) => week.forEach((e2) => {
 
-     //get totApps
-     var totNewApp = (await jobApp.find({status: { $in: 'applied'}  })).length
-     var totInt = (await jobApp.find({status: { $in: 'interview'}  })).length
-     var totOff = (await jobApp.find({status: { $in: 'offer'}  })).length
-     var totApp = []
-     totApp.push(totNewApp + totInt + totOff )
+        var createdDate = e1.createdAt.toISOString().substr(0, 10)
+        if (createdDate == e2) {
+            finalArr.push(e1)
+        }
+    }))
+    var lastWeek = finalArr.length
 
-        // Create a document
-        const doc = new PDFDocument;
-        doc.pipe(fs.createWriteStream('output.pdf'));
-      
-        doc.fontSize(30)
-        .text("Report", 100, 100, {align: 'center'})
-        .underline(270, 100, 100, 27, {align: 'center'})
-       
-        doc.save()
+    //get totApps
+    var totNewApp = (await jobApp.find({ status: { $in: 'applied' } })).length
+    var totInt = (await jobApp.find({ status: { $in: 'interview' } })).length
+    var totOff = (await jobApp.find({ status: { $in: 'offer' } })).length
+    var totApp = []
+    totApp.push(totNewApp + totInt + totOff)
 
-        doc.fontSize(25)
-        .text("Jobs applied for in the last week: " + lastWeek, 100, 170,)
-      
-        doc.save()
+    // Create a document
+    const doc = new PDFDocument;
+    doc.pipe(fs.createWriteStream('output.pdf'));
+
+    doc.fontSize(30)
+        .text("Report", 100, 100, { align: 'center' })
+        .underline(270, 100, 100, 27, { align: 'center' })
+
+    doc.save()
+
+    doc.fontSize(25)
+        .text("Jobs applied for in the last week: " + lastWeek, 100, 170)
+
+    doc.save()
         .moveTo(100, 150)
 
-        doc.fontSize(25)
+    doc.fontSize(25)
         .text("Jobs applied for in total: " + totApp, 100, 220)
-        doc.save()
+    doc.save()
         .moveTo(100, 150)
 
-        doc.fontSize(25)
+    doc.fontSize(25)
         .text("Students looking for a job: " + studentUsers, 100, 270)
-        doc.save()
+    doc.save()
         .moveTo(100, 150)
-     
-        doc.image('./diagrampicture1.png', 150, 190, {fit: [300, 500], align: 'center', valign: 'center'})
- 
-        doc.scale(0.6)
+
+    doc.image('./diagrampicture1.png', 150, 190, { fit: [300, 500], align: 'center', valign: 'center' })
+
+    doc.scale(0.6)
         .translate(470, -380)
         .path('M 250,75 L 323,301 131,161 369,161 177,301 z')
         .fill('red', 'even-odd')
         .restore();
 
-        let buffer = []
+    let buffer = []
 
-        doc.on("data", buffer.push.bind(buffer))
+    doc.on("data", buffer.push.bind(buffer))
 
-        doc.on("end", () =>{
-            let pdf =Buffer.concat(buffer)
-            res.writeHead(200, {
-                "Content-Length": Buffer.byteLength(pdf),
-                "Content-Type": "application/pdf",
-                "Content-disposition": "attachment;filename=export.pdf",
-            })
-            res.end(pdf)
+    doc.on("end", () => {
+        let pdf = Buffer.concat(buffer)
+        res.writeHead(200, {
+            "Content-Length": Buffer.byteLength(pdf),
+            "Content-Type": "application/pdf",
+            "Content-disposition": "attachment;filename=export.pdf",
         })
-        doc.end();
+        res.end(pdf)
+    })
+    doc.end();
 })
 
-router.get("/AppsWeek",  async (req, res) => {
-     var curr = new Date() 
-     var week = []
-      for (let i = 1; i <= 7; i++) {
-        let first = curr.getDate() - curr.getDay() + i 
+router.get("/AppsWeek", async (req, res) => {
+    var curr = new Date()
+    var week = []
+    for (let i = 1; i <= 7; i++) {
+        let first = curr.getDate() - curr.getDay() + i
         let day = new Date(curr.setDate(first)).toISOString().slice(0, 10)
-        week.push(day)        
-      }
-      var finalArr=[]
-      var newApplications = await jobApp.find({ status: { $in: 'applied'}})  
-      console.log(newApplications,"new")
-      newApplications.forEach((e1)=>week.forEach((e2)=>{
-       var createdDate = e1.createdAt.toISOString().substr(0, 10)
-        if(createdDate == e2)
-        {
+        week.push(day)
+    }
+    var finalArr = []
+    var newApplications = await jobApp.find({ status: { $in: 'applied' } })
+    console.log(newApplications, "new")
+    newApplications.forEach((e1) => week.forEach((e2) => {
+        var createdDate = e1.createdAt.toISOString().substr(0, 10)
+        if (createdDate == e2) {
             finalArr.push(e1)
         }
-      }))
-      console.log(finalArr,"final")
-      var lastWeek = finalArr.length
-      res.send(lastWeek)
+    }))
+    console.log(finalArr, "final")
+    var lastWeek = finalArr.length
+    res.send(lastWeek)
 })
 
 router.get("/:id", async (req, res) => {
