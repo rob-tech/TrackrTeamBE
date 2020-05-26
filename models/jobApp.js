@@ -45,7 +45,7 @@ var JobApp = new mongoose.Schema({
     }],
     status: {
         type: String,
-        enum: ["wishlist", "applied", "interview", "offer", "application withdrawn", "rejected"],
+        enum: ["wishlist", "applied", "interview", "offer", "application_withdrawn", "rejected"],
         required: true,
     },
 }, {
