@@ -30,7 +30,7 @@ mongoose
     useNewUrlParser: true
   })
   .then(
-    server.listen(server.get("port", process.env.PORT || 4000), () => {
+    server.listen(server.get('port'), () => {
       console.log("SERVER IS RUNNING ON " + server.get("port"));
     })
   )
