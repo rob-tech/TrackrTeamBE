@@ -6,7 +6,7 @@ const router = express.Router();
 
 // const REDIS_PORT = process.env.PORT || 6379;
 // const client = redis.createClient(REDIS_PORT)
-var client = require('redis').createClient(process.env.REDIS_URL);
+var client = require('redis').createClient(process.env.REDIS_URL || 6379);
 console.log(process.env.REDIS_URL)
 
 

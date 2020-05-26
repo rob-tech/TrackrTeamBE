@@ -18,6 +18,11 @@ router.get("/app", token, studentOnly, async (req, res) => {
     res.send(await jobApp.find({ studentId: req.user._id }))
 })
 
+router.get("/recentActivities", token, managerOnly, async (req, res) => {
+    res.send(await jobApp.find({}))
+})
+
+
 router.get("/totApp", async (req, res) => {
     var totNewApp = (await jobApp.find({ status: { $in: 'applied' } })).length
     var totInt = (await jobApp.find({ status: { $in: 'interview' } })).length
